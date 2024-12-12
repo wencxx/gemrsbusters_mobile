@@ -30,13 +30,13 @@
                     <router-link class="text-primary">See All</router-link>
                 </div>
                 <div class="flex gap-x-4 w-full overflow-x-auto pl-4" id="services">
-                    <div v-for="i in 5" :key="i" class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full">
-                        <p>HAHAHA</p>
-                    </div>
+                    <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" v-for="i in 5" :key="i" class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full">
+                        <p>Cleaning</p>
+                    </router-link>
                 </div>
             </div>
             <!-- popular -->
-            <div class="px-4 !mt-8 space-y-4">
+            <div class="px-4 !mt-8 space-y-4 pb-14">
                 <h1 class="font-semibold text-lg">Popular Services</h1>
                 <div class="space-y-3">
                     <div v-for="i in 4" :key="i" class="bg-white w-full h-fit rounded-2xl border p-4 space-y-2">
