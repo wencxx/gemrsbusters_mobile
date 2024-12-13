@@ -57,7 +57,7 @@
                 <Icon icon="iconamoon:home" />
                 <div v-if="$route.name === 'home'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link class="relative">
+            <router-link :to="{ name: 'serviceDetails' }" class="relative">
                 <Icon icon="lucide:list" />
                 <div v-if="$route.name === 'reservations'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
