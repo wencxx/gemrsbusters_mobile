@@ -1,8 +1,8 @@
 <template>
     <div class="w-screen h-screen py-4 bg-gray-100">
         <div class="w-full h-full overflow-y-auto space-y-5">
-            <div class="flex items-center justify-between w-full px-4">
-                <p class="text-gray-500 text-lg">Hi, Wency!</p>
+            <div class="flex items-center justify-between w-full px-4 sticky top-0 bg-gray-100 pb-2">
+                <p class="text-gray-500 text-lg">Hi, {{ currentUser?.displayName.split(' ')[0] }}!</p>
                 <div class="relative">
                     <Icon icon="mdi:bell-outline" class="text-3xl" />
                     <div class="bg-red-500 w-2 aspect-square rounded-full absolute top-0 right-0"></div>
@@ -26,23 +26,32 @@
             <!-- services -->
             <div class="space-y-4">
                 <div class="flex justify-between items-center px-4">
-                    <h1 class="font-semibold text-lg">Our Services</h1>
-                    <router-link class="text-primary">See All</router-link>
+                    <h1 class="font-semibold text-lg">Our services</h1>
+                    <router-link :to="{ name: 'home' }" class="text-primary">See All</router-link>
                 </div>
-                <div class="flex gap-x-4 w-full overflow-x-auto pl-4" id="services">
-                    <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" v-for="i in 5" :key="i" class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full">
-                        <p>Cleaning</p>
-                    </router-link>
+                <div v-if="!fetching && services.length" class="flex w-full overflow-x-auto pl-4" id="services">
+                        <router-link v-for="(service, index) in services" :key="index" :to="{ name: 'serviceDetails', params: { id: service.id } }" class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full">
+                            <p>{{ service.title }} </p>
+                        </router-link>
+                </div>
+                <div v-else-if="!fetching && !services.length" class="flex w-full overflow-x-auto pl-4" id="services">
+                    <p>No services to show</p>
+                </div>
+                <div v-else class="flex w-full overflow-x-auto pl-4" id="services">
+                    <div class="flex gap-x-4">
+                        <div v-for="i in 5" :key="i" class="bg-gray-200 text-gray-500 w-32 h-9 py-2 rounded-full animate-pulse">
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- popular -->
             <div class="px-4 !mt-8 space-y-4 pb-14">
                 <h1 class="font-semibold text-lg">Popular Services</h1>
                 <div class="space-y-3">
-                    <div v-for="i in 4" :key="i" class="bg-white w-full h-fit rounded-2xl border p-4 space-y-2">
-                        <h1 class="font-bold text-lg">Deep Cleaning</h1>
-                        <p class="line-clamp-3 font-semibold text-gray-600">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
-                        <p class="font-bold text-lg text-gray-600/75"><span class="!text-primary">₱100</span>/sqm</p>
+                    <div v-for="(service, index) in services" :key="index" class="bg-white w-full h-fit rounded-2xl border p-4 space-y-2">
+                        <h1 class="font-bold text-lg">{{ service.title }}</h1>
+                        <p class="line-clamp-3 font-semibold text-gray-600">{{ service.description   }}</p>
+                        <p class="font-bold text-lg text-gray-600/75"><span class="!text-primary">₱{{ service.rate }}</span>/sqm</p>
                         <div class="flex gap-x-1 items-center">
                             <Icon icon="mdi:star" class="text-2xl text-secondary" />
                             <p class="mt-1 text-gray-500">4.8</p>
@@ -55,25 +64,35 @@
         <div class="fixed bottom-0 left-0 w-full h-16 border flex items-center justify-center gap-x-12 text-3xl green z-10 bg-gray-100">
             <router-link :to="{ name: 'home' }" class="relative">
                 <Icon icon="iconamoon:home" />
-                <div v-if="$route.name === 'home'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div v-if="$route.name === 'home'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link :to="{ name: 'serviceDetails' }" class="relative">
+            <router-link :to="{ name: 'reservationLists' }" class="relative">
                 <Icon icon="lucide:list" />
-                <div v-if="$route.name === 'reservations'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div v-if="$route.name === 'reservationLists'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link class="relative">
+            <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" class="relative">
                 <Icon icon="iconamoon:home" />
-                <div v-if="$route.name === 'home'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div v-if="$route.name === 'serviceDetails'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link class="relative">
+            <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" class="relative">
                 <Icon icon="iconoir:user" />
-                <div v-if="$route.name === 'profile'" class="bg-primary w-2 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div v-if="$route.name === 'serviceDetails'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
         </div>
     </div>
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from 'vue'
+import { useDataStore, useAuthStore } from '../store'
+
+const authStore = useAuthStore()
+const dataStore = useDataStore()
+
+const currentUser = computed(() => authStore.user)
+
+const fetching = computed(() => dataStore.fetchingServices)
+const services = computed(() => dataStore.services)
 
 </script>
 
