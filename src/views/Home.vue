@@ -4,8 +4,9 @@
             <div class="flex items-center justify-between w-full px-4 sticky top-0 bg-gray-100 pb-2">
                 <p class="text-gray-500 text-lg">Hi, {{ currentUser?.displayName.split(' ')[0] }}!</p>
                 <div class="relative">
-                    <Icon icon="mdi:bell-outline" class="text-3xl" />
-                    <div class="bg-red-500 w-2 aspect-square rounded-full absolute top-0 right-0"></div>
+                    <!-- <Icon icon="mdi:bell-outline" class="text-3xl" />
+                    <div class="bg-red-500 w-2 aspect-square rounded-full absolute top-0 right-0"></div> -->
+                    <Icon icon="mdi:logout" class="text-2xl cursor-pointer" @click="logout" />
                 </div>
             </div>
             <div class="px-4">
@@ -85,9 +86,17 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useDataStore, useAuthStore } from '../store'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const dataStore = useDataStore()
+
+const router = useRouter()
+
+const logout = () => {
+    authStore.logout()
+    router.push('/login')
+}
 
 const currentUser = computed(() => authStore.user)
 

@@ -33,6 +33,7 @@ onAuthStateChanged(auth,async (user) => {
 
     authStore.user = userData
     dataStore.getServices()
+    dataStore.getEmployee()
   }else{
     authStore.logout()
   }

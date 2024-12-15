@@ -6,7 +6,7 @@
                 <div class="relative">
                     <!-- <Icon icon="mdi:bell-outline" class="text-3xl" /><:
                     <div class="bg-red-500 w-2 aspect-square rounded-full absolute top-0 right-0"></div> -->
-                    <Icon icon="mdi:logout" class="text-2xl" />
+                    <Icon icon="mdi:logout" class="text-2xl cursor-pointer" @click="logout" />
                 </div>
             </div>
             <div class="px-4">
@@ -21,6 +21,22 @@
                     <div>
                         <h1 class="text-lg text-gray-500 font-medium">Status</h1>
                         <h1 class="text-lg -mt-2 text-gray-700 font-bold capitalize">{{ reservationDetails.status }}</h1>
+                    </div>
+                </div>
+                <div v-if="reservationDetails.status === 'rejected'" class="flex gap-x-2">
+                    <Icon icon="ph:question-light" class="text-3xl"/>
+                    <div>
+                        <h1 class="text-lg text-gray-500 font-medium">Reason for rejection</h1>
+                        <h1 class="text-lg -mt-2 text-gray-700 font-bold">{{ reservationDetails.reason }}</h1>
+                    </div>
+                </div>
+                <div v-if="reservationDetails.assignedEmployees?.length" class="flex gap-x-2">
+                    <Icon icon="healthicons:domestic-worker-alt-outline" class="text-3xl"/>
+                    <div>
+                        <h1 class="text-lg text-gray-500 font-medium">Assigned Employee</h1>
+                        <h1 class="text-lg -mt-2 text-gray-700 font-bold flex flex-wrap gap-x-1">
+                            <span v-for="employeeID in reservationDetails.assignedEmployees" :key="employeeID">{{ getEmployeeDetails(employeeID).fullName + ' -' }}</span>
+                        </h1>
                     </div>
                 </div>
                 <div class="flex gap-x-2">
@@ -109,13 +125,14 @@
 <script setup>
 import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useDataStore, useAuthStore } from '../store'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { db } from '../config/firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import moment from 'moment'
 import cancelWarning from '../components/cancelWarning.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const authStore = useAuthStore()
 const dataStore = useDataStore()
@@ -129,6 +146,11 @@ onMounted(() => {
         }
     })
 })
+
+const logout = () => {
+    authStore.logout()
+    router.push('/login')
+}
 
 // get reservations
 const reservationDetails = ref({})
@@ -190,6 +212,11 @@ const cancel = async () => {
     } finally {
         canceling.value = false
     }
+}
+
+// get employeeDetails
+const getEmployeeDetails = (employeeID) => {
+    return dataStore.getEmployeeDetails(employeeID)
 }
 </script>
 
