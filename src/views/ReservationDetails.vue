@@ -35,7 +35,7 @@
                     <div>
                         <h1 class="text-lg text-gray-500 font-medium">Assigned Employee</h1>
                         <h1 class="text-lg -mt-2 text-gray-700 font-bold flex flex-wrap gap-x-1">
-                            <span v-for="employeeID in reservationDetails.assignedEmployees" :key="employeeID">{{ getEmployeeDetails(employeeID).fullName + ' -' }}</span>
+                            <span v-for="employeeID in reservationDetails.assignedEmployees" :key="employeeID">{{ getEmployeeDetails(employeeID)?.fullName + ' -' }}</span>
                         </h1>
                     </div>
                 </div>
@@ -96,6 +96,7 @@
                 <p v-if="err" class="bg-red-500 pl-2 text-white rounded py-1">{{ err }}</p>
                 <button v-if="!canceling && reservationDetails.status === 'pending'" class="w-full !mt-auto bg-red-500 py-2 text-white rounded-lg" @click="showCancelWarning = true">Cancel</button>
                 <button v-else-if="canceling && reservationDetails.status === 'pending'" class="w-full !mt-auto bg-red-500 py-2 text-white rounded-lg animate-pulse" disabled>Canceling</button>
+                <button v-if="reservationDetails.status === 'completed'" class="w-full !mt-auto bg-green-500 py-2 text-white rounded-lg" @click="rate(getService(reservationDetails.serviceID))">Feedback</button>
             </div>
         </div>
         <!-- bottom navigation -->
@@ -117,8 +118,8 @@
                 <div v-if="$route.name === 'serviceDetails'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
         </div>
-
         <cancelWarning v-if="showCancelWarning" @closeModal="showCancelWarning = false" @confirmCancel="cancel" />
+        <addFeedback v-if="showRateModal" :serviceDetailsToRate="serviceDetailsToRate" @closeModal="showRateModal = false" />
     </div>
 </template>
 
@@ -130,6 +131,7 @@ import { db } from '../config/firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import moment from 'moment'
 import cancelWarning from '../components/cancelWarning.vue'
+import addFeedback from '../components/addFeedback.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -217,6 +219,15 @@ const cancel = async () => {
 // get employeeDetails
 const getEmployeeDetails = (employeeID) => {
     return dataStore.getEmployeeDetails(employeeID)
+}
+
+// rate 
+const showRateModal = ref(false)
+const serviceDetailsToRate = ref({})
+
+const rate = (serviceDetails) => {
+    showRateModal.value = true
+    serviceDetailsToRate.value = serviceDetails
 }
 </script>
 

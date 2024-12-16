@@ -54,7 +54,7 @@ const useDataStore = defineStore('dataStore', {
             } 
         },
         getEmployeeDetails(employeeID){
-            return this.employee.find(employee => employee.id === employeeID)
+            return this.employee.find(employee => employee.userID === employeeID)
         },
      }
 })

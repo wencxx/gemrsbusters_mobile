@@ -49,14 +49,16 @@
             <div class="px-4 !mt-8 space-y-4 pb-14">
                 <h1 class="font-semibold text-lg">Popular Services</h1>
                 <div class="space-y-3">
-                    <div v-for="(service, index) in services" :key="index" class="bg-white w-full h-fit rounded-2xl border p-4 space-y-2">
-                        <h1 class="font-bold text-lg">{{ service.title }}</h1>
-                        <p class="line-clamp-3 font-semibold text-gray-600">{{ service.description   }}</p>
-                        <p class="font-bold text-lg text-gray-600/75"><span class="!text-primary">₱{{ service.rate }}</span>/sqm</p>
-                        <div class="flex gap-x-1 items-center">
-                            <Icon icon="mdi:star" class="text-2xl text-secondary" />
-                            <p class="mt-1 text-gray-500">4.8</p>
-                        </div>
+                    <div v-for="(service, index) in services" :key="index" class="bg-white w-full h-fit rounded-2xl border p-4">
+                        <router-link :to="{ name: 'serviceDetails', params: { id: service.id } }" class=" space-y-2">
+                            <h1 class="font-bold text-lg">{{ service.title }}</h1>
+                            <p class="line-clamp-3 font-semibold text-gray-600">{{ service.description   }}</p>
+                            <p class="font-bold text-lg text-gray-600/75"><span class="!text-primary">₱{{ service.rate }}</span>/sqm</p>
+                            <div class="flex gap-x-1 items-center">
+                                <Icon icon="mdi:star" class="text-2xl text-secondary" />
+                                <p class="mt-1 text-gray-500">{{ ratings(service.id) }}</p>
+                            </div>
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -102,6 +104,22 @@ const currentUser = computed(() => authStore.user)
 
 const fetching = computed(() => dataStore.fetchingServices)
 const services = computed(() => dataStore.services)
+
+
+const ratings = (serviceID) => {
+    const service = services.value.find(service => service.id === serviceID)
+
+    if (service && service.ratings && service.ratings.length > 0) {
+        const totalRating = service.ratings.reduce((acc, rating) => acc + rating.rating, 0)
+
+        // Calculate the average rating
+        const averageRating = totalRating / service.ratings.length
+
+        return averageRating.toFixed(1)
+    } else {
+        return 0 
+    }
+}
 
 </script>
 

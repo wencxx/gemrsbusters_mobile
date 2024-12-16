@@ -139,7 +139,7 @@
                     <div class="space-y-5">
                         <div class="flex flex-col gap-y-2">
                             <label class="font-semibold text-gray-500 uppercase text-sm">Floor area(sqm)</label>
-                            <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter floor area" v-model="secondPageData.floorArea">
+                            <input type="number" class="border-b py-1 focus:outline-none" placeholder="Enter floor area" v-model="secondPageData.floorArea">
                         </div>
                         <div class="flex flex-col gap-y-2">
                             <label class="font-semibold text-gray-500 uppercase text-sm">Type</label>
@@ -152,7 +152,7 @@
                         <div v-if="secondPageData.type === 'Rush'" class="flex flex-col gap-y-2">
                             <label class="font-semibold text-gray-500 uppercase text-sm">No. of workers</label>
                             <select class="border-b py-1 focus:outline-none bg-transparent" v-model="secondPageData.noOfWorkers">
-                                <option value="">Select number of workers</option>
+                                <option value="1" disabled>Select number of workers</option>
                                 <option>2</option>
                                 <option>3</option>
                                 <option>4</option>

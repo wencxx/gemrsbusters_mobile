@@ -14,8 +14,12 @@
                 <div>
                     <h1 class="text-lg font-bold tracking-wide uppercase">{{ serviceDetails?.title }}</h1>
                     <div class="flex items-center">
-                        <Icon icon="mdi:star" class="text-secondary" v-for="i in 5" :key="i" />
-                        <p class="text-sm ml-2">5.0</p>
+                        <Icon 
+                            v-for="i in 5" 
+                            :key="i" 
+                            :icon="i <= Math.floor(ratings()) ? 'mdi:star' : 'mdi:star-outline'" 
+                            :class="{ 'text-secondary': i <= Math.floor(ratings()) }" />
+                        <p class="text-sm ml-2">{{ ratings() }}</p>
                     </div>
                 </div>
                 <p class="text-sm text-gray-600 tracking-wide">{{ serviceDetails?.description }}</p>
@@ -46,4 +50,14 @@ onMounted(() => {
         serviceDetails.value = dataStore.getSingleService(route.params.id)
     })
 })
+
+const ratings = () => {
+    if (serviceDetails.value && serviceDetails.value.ratings && serviceDetails.value.ratings.length > 0) {
+        const totalRating = serviceDetails.value.ratings.reduce((acc, rating) => acc + rating.rating, 0)
+        const averageRating = totalRating / serviceDetails.value.ratings.length
+        return averageRating
+    } else {
+        return 0 
+    }
+}
 </script>

@@ -27,7 +27,7 @@
                         <div class="space-y-1">
                             <h1 class="font-semibold text-gray-700 space-x-2 text-sm">
                                 <span class="uppercase">GB{{ reservation.id.slice(0, 4) }}</span>
-                                <span class="text-primary">{{ getService(reservation.serviceID).title }}</span>
+                                <span class="text-primary">{{ getService(reservation.serviceID)?.title }}</span>
                             </h1>
                             <p class="text-xs capitalize text-white font-semibold bg-orange-500 w-fit px-3 py-1 rounded" :class="{ '!bg-red-500': reservation.status === 'canceled' || reservation.status === 'rejected', '!bg-gray-500': reservation.status === 'completed' || reservation.status === 'accepted' }">{{ reservation.status }}</p>
                         </div>
