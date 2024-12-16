@@ -1,5 +1,5 @@
 <template>
-    <div class="h-screen w-screen bg-gray-100 flex flex-col items-center justify-around">
+    <div class="h-screen w-screen bg-gray-100 flex flex-col items-center justify-evenly">
         <div>
             <img src="../assets/logo.png" alt="app logo" class="w-28 aspect-square">
         </div>
