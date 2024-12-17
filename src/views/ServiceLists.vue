@@ -51,9 +51,9 @@
                 <Icon icon="hugeicons:cleaning-bucket" />
                 <div v-if="$route.name === 'serviceLists'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" class="relative">
+            <router-link :to="{ name: 'profile', params: { id: 1 } }" class="relative">
                 <Icon icon="iconoir:user" />
-                <div v-if="$route.name === 'serviceDetails'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div v-if="$route.name === 'profile'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
         </div>
     </div>
