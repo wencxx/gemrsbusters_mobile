@@ -28,9 +28,9 @@
             <div class="space-y-4">
                 <div class="flex justify-between items-center px-4">
                     <h1 class="font-semibold text-lg">Our services</h1>
-                    <router-link :to="{ name: 'home' }" class="text-primary">See All</router-link>
+                    <router-link :to="{ name: 'serviceLists' }" class="text-primary">See All</router-link>
                 </div>
-                <div v-if="!fetching && services.length" class="flex w-full overflow-x-auto pl-4" id="services">
+                <div v-if="!fetching && services.length" class="flex w-full overflow-x-auto pl-4 gap-x-2" id="services">
                         <router-link v-for="(service, index) in services" :key="index" :to="{ name: 'serviceDetails', params: { id: service.id } }" class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full">
                             <p>{{ service.title }} </p>
                         </router-link>
@@ -48,7 +48,7 @@
             <!-- popular -->
             <div class="px-4 !mt-8 space-y-4 pb-14">
                 <h1 class="font-semibold text-lg">Popular Services</h1>
-                <div class="space-y-3">
+                <div v-if="!fetching && services.length" class="space-y-3">
                     <div v-for="(service, index) in services" :key="index" class="bg-white w-full h-fit rounded-2xl border p-4">
                         <router-link :to="{ name: 'serviceDetails', params: { id: service.id } }" class=" space-y-2">
                             <h1 class="font-bold text-lg">{{ service.title }}</h1>
@@ -59,6 +59,15 @@
                                 <p class="mt-1 text-gray-500">{{ ratings(service.id) }}</p>
                             </div>
                         </router-link>
+                    </div>
+                </div>
+                <div v-else-if="!fetching && !services.length" class="flex w-full overflow-x-auto pl-4" id="services">
+                    <p>No services to show</p>
+                </div>
+                <div v-else id="services">
+                    <div class="flex flex-col gap-y-3">
+                        <div v-for="i in 5" :key="i" class="bg-gray-200 text-gray-500 w-full h-24 py-2 rounded-lg animate-pulse">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -73,9 +82,9 @@
                 <Icon icon="lucide:list" />
                 <div v-if="$route.name === 'reservationLists'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
-            <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" class="relative">
-                <Icon icon="iconamoon:home" />
-                <div v-if="$route.name === 'serviceDetails'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+            <router-link :to="{ name: 'serviceLists', params: { id: 1 } }" class="relative">
+                <Icon icon="hugeicons:cleaning-bucket" />
+                <div v-if="$route.name === 'serviceLists'" class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
             </router-link>
             <router-link :to="{ name: 'serviceDetails', params: { id: 1 } }" class="relative">
                 <Icon icon="iconoir:user" />

@@ -10,26 +10,17 @@
                 </div>
             </div>
             <div class="px-4">
-                <h1 class="font-bold tracking-wide text-xl w-2/3">My Reservations</h1>
+                <h1 class="font-bold tracking-wide text-xl w-2/3">Services</h1>
             </div>
             <!-- reservations -->
             <div class="px-4 space-y-3 pb-14">
-                <div class="flex items-center gap-x-3 w-full overflow-x-auto filter">
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'all' }" @click="filter('all')">All</button>
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'pending' }" @click="filter('pending')">Pending</button>
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'accepted' }" @click="filter('accepted')">Accepted</button>
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'completed' }" @click="filter('completed')">Completed</button>
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'canceled' }" @click="filter('canceled')">Canceled</button>
-                    <button class="text-gray-400 font-bold" :class="{ '!text-black': filterQuery === 'rejected' }" @click="filter('rejected')">Rejected</button>
-                </div>
-                <div v-if="!fetching && filteredReservations().length" class="space-y-3">
-                    <router-link :to="{ name: 'reservationDetails', params: { id: reservation.id } }" v-for="reservation in filteredReservations()" :key="reservation.id" class="bg-white w-full h-fit rounded-lg shadow-sm p-4 flex justify-between items-center">
+                <div v-if="!fetching && services.length" class="space-y-3">
+                    <router-link :to="{ name: 'serviceDetails', params: { id: service.id } }" v-for="service in services" :key="service.id" class="bg-white w-full h-fit rounded-lg shadow-sm p-4 flex justify-between items-center">
                         <div class="space-y-1">
                             <h1 class="font-semibold text-gray-700 space-x-2 text-sm">
-                                <span class="uppercase">GB{{ reservation.id.slice(0, 4) }}</span>
-                                <span class="text-primary">{{ getService(reservation.serviceID)?.title }}</span>
+                                <span class="uppercase">{{ service.title }}</span>
                             </h1>
-                            <p class="text-xs capitalize text-white font-semibold bg-orange-500 w-fit px-3 py-1 rounded" :class="{ '!bg-red-500': reservation.status === 'canceled' || reservation.status === 'rejected', '!bg-gray-500': reservation.status === 'completed' || reservation.status === 'accepted' }">{{ reservation.status }}</p>
+                            <span class="text-primary">{{ formatTotal(service.rate) }}</span>
                         </div>
                         <div class="flex items-center gap-x-3">
                             <router-link :to="{ name: 'home' }">
@@ -38,7 +29,7 @@
                         </div>
                     </router-link>
                 </div>
-                <div v-if="!fetching && !filteredReservations().length">
+                <div v-if="!fetching && !services.length">
                     <p class="text-center mt-5 text-gray-500">No reservations to show.</p>
                 </div>
                 <div v-if="fetching" class="space-y-3">
@@ -82,27 +73,24 @@ const currentUser = computed(() => authStore.user)
 onMounted(() => {
     watchEffect(() => {
         if(currentUser.value){
-            getReservations()
+            getServices()
         }
     })
 })
 
 // get reservations
-const reservations = ref([])
+const services = ref([])
 const fetching = ref([])
 
-const getReservations = async () => {
+const getServices = async () => {
     try {
         fetching.value = true
-        const q = query(
-            collection(db, 'reservations'),
-            where('userID', '==', currentUser.value.uid)
-        )
+        const docRef = collection(db, 'services')
 
-        const snapshots = await getDocs(q)
+        const snapshots = await getDocs(docRef)
 
         snapshots.docs.forEach(doc => {
-            reservations.value.push({
+            services.value.push({
                 id: doc.id,
                 ...doc.data()
             })
@@ -114,23 +102,12 @@ const getReservations = async () => {
     }
 }
 
-// filter reservations
-const filterQuery = ref('all')
-const filteredReservations = () => {
-    if(filterQuery.value === 'all') return reservations.value
-
-    return reservations.value.filter(reservation => reservation.status === filterQuery.value)
+const formatTotal = (total) => {
+    return Number(total).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'PHP'
+    })
 }
-
-const filter = (filter) => {
-    filterQuery.value = filter
-}
-
-// get service details
-const getService = (serviceID) => {
-    return dataStore.getSingleService(serviceID)
-}
-
 </script>
 
 <style scoped>

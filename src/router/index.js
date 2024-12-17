@@ -27,6 +27,14 @@ const routes = [
         }
     },
     {
+        path: '/service-lists',
+        name: 'serviceLists',
+        component: () => import('../views/ServiceLists.vue'),
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
         path: '/service-details/:id',
         name: 'serviceDetails',
         component: () => import('../views/ServiceDetails.vue'),
