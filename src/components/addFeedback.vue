@@ -34,12 +34,13 @@
 <script setup>
 import { ref } from 'vue'
 import { db } from '../config/firebaseConfig'
-import { doc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore'
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
 
-const emit = defineEmits(['closeModal'])
+const emit = defineEmits(['closeModal', 'feedbackSubmitted'])
 
-const { serviceDetailsToRate } = defineProps({
-    serviceDetailsToRate: Object
+const { serviceDetailsToRate, reservationId } = defineProps({
+    serviceDetailsToRate: Object,
+    reservationId: String
 })
 
 const rating = ref(0)
@@ -65,10 +66,23 @@ const submitFeedback = async () => {
 
     try {
         submitting.value = true
+        // 1. Update service document ratings
         await updateDoc(docRef, {
             ratings: arrayUnion({ rating: rating.value, feedback: feedback.value, timestamp: new Date() })
         })
 
+        // 2. Update reservation document feedback
+        if (reservationId) {
+            const reservationDocRef = doc(db, 'reservations', reservationId)
+            await updateDoc(reservationDocRef, {
+                hasFeedback: true,
+                rating: rating.value,
+                feedback: feedback.value,
+                feedbackTimestamp: new Date()
+            })
+        }
+
+        emit('feedbackSubmitted', rating.value, feedback.value)
         closeModal()
     } catch (error) {
         console.error("Error submitting feedback: ", error)

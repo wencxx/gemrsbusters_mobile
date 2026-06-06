@@ -60,7 +60,7 @@
             v-for="(service, index) in services"
             :key="index"
             :to="{ name: 'serviceDetails', params: { id: service.id } }"
-            class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full"
+            class="bg-gray-200 text-gray-500 px-4 py-2 rounded-full shrink-0"
           >
             <p>{{ service.title }}</p>
           </router-link>
@@ -77,7 +77,7 @@
             <div
               v-for="i in 5"
               :key="i"
-              class="bg-gray-200 text-gray-500 w-32 h-9 py-2 rounded-full animate-pulse"
+              class="bg-gray-200 text-gray-500 w-32 h-9 py-2 rounded-full animate-pulse shrink-0"
             ></div>
           </div>
         </div>
@@ -141,43 +141,43 @@
         </div>
       </div>
     </div>
-    <!-- bottom navigation -->
-    <div
-      class="fixed bottom-0 left-0 w-full h-16 border flex items-center justify-center gap-x-12 text-3xl green z-10 bg-gray-100"
-    >
-      <router-link :to="{ name: 'home' }" class="relative">
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 w-full h-20 border-t border-gray-100 flex items-center justify-around text-2xl z-20 bg-white/95 backdrop-blur-md pb-4 pt-2">
+      <router-link 
+        :to="{ name: 'home' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'home' }"
+      >
         <Icon icon="iconamoon:home" />
-        <div
-          v-if="$route.name === 'home'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+        <div v-if="$route.name === 'home'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link :to="{ name: 'reservationLists' }" class="relative">
+      <router-link 
+        :to="{ name: 'reservationLists' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'reservationLists' || $route.name === 'reservationDetails' }"
+      >
         <Icon icon="lucide:list" />
-        <div
-          v-if="$route.name === 'reservationLists'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Bookings</span>
+        <div v-if="$route.name === 'reservationLists' || $route.name === 'reservationDetails'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link
-        :to="{ name: 'serviceLists', params: { id: 1 } }"
-        class="relative"
+      <router-link 
+        :to="{ name: 'serviceLists' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'serviceLists' || $route.name === 'serviceDetails' }"
       >
         <Icon icon="hugeicons:cleaning-bucket" />
-        <div
-          v-if="$route.name === 'serviceLists'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Services</span>
+        <div v-if="$route.name === 'serviceLists' || $route.name === 'serviceDetails'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link
-        :to="{ name: 'profile', params: { id: 1 } }"
-        class="relative"
+      <router-link 
+        :to="{ name: 'profile' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'profile' }"
       >
         <Icon icon="iconoir:user" />
-        <div
-          v-if="$route.name === 'profile'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+        <div v-if="$route.name === 'profile'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
     </div>
   </div>
@@ -201,7 +201,7 @@ const logout = () => {
 const currentUser = computed(() => authStore.user);
 
 const fetching = computed(() => dataStore.fetchingServices);
-const services = computed(() => dataStore.services);
+const services = computed(() => dataStore.services.filter(s => s.isDeleted !== true));
 
 const ratings = (serviceID) => {
   const service = services.value.find((service) => service.id === serviceID);

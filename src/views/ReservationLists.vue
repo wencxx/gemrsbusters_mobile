@@ -1,38 +1,44 @@
 <template>
-  <div class="w-screen h-screen py-4 bg-gray-100">
-    <div class="w-full h-full overflow-y-auto space-y-5">
-      <div
-        class="flex items-center justify-between w-full px-4 sticky top-0 bg-gray-100 pb-2"
-      >
-        <p class="text-gray-500 text-lg">
-          Hi, {{ currentUser?.displayName.split(" ")[0] }}!
-        </p>
-        <div class="relative">
-          <!-- <Icon icon="mdi:bell-outline" class="text-3xl" />
-                    <div class="bg-red-500 w-2 aspect-square rounded-full absolute top-0 right-0"></div> -->
-          <Icon icon="mdi:logout" class="text-2xl" />
+  <div class="w-screen h-screen py-4 bg-slate-50 font-sans">
+    <div class="w-full h-full overflow-y-auto space-y-6 px-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between w-full sticky top-0 bg-slate-50/80 backdrop-blur-md pb-4 pt-2 z-20">
+        <div class="flex items-center gap-x-2">
+          <button @click="router.back()" class="p-2 hover:bg-gray-200/50 active:scale-95 rounded-xl transition-all">
+            <Icon icon="mdi:arrow-left" class="text-xl text-gray-700" />
+          </button>
+          <div>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Welcome back</p>
+            <p class="text-xs font-semibold text-gray-700 -mt-0.5">Hi, {{ currentUser?.displayName?.split(' ')[0] }}!</p>
+          </div>
         </div>
+        <button @click="logout" class="p-2 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-xl transition-all active:scale-95" title="Log Out">
+          <Icon icon="mdi:logout" class="text-xl" />
+        </button>
       </div>
-      <div class="px-4">
-        <h1 class="font-bold tracking-wide text-xl w-2/3">My Reservations</h1>
-      </div>
-      <!-- reservations -->
-      <div class="px-4 space-y-3 pb-14">
-        <div class="w-full">
-          <select
-            v-model="filterQuery"
-            @change="filter(filterQuery)"
-            class="border rounded px-3 py-2 w-full"
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="completed">Completed</option>
-            <option value="canceled">Canceled</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
 
+      <!-- Page Title -->
+      <div>
+        <h1 class="font-bold tracking-tight text-2xl text-gray-900">My Bookings</h1>
+      </div>
+
+      <!-- Horizontal Scrollable Filter Chips -->
+      <div class="w-full overflow-x-auto flex gap-x-2 pb-2 scrollbar-none shrink-0">
+        <button 
+          v-for="status in ['all', 'pending', 'accepted', 'completed', 'canceled', 'rejected']"
+          :key="status"
+          @click="filter(status)"
+          class="px-4 py-2 rounded-xl text-xs font-semibold border transition-all shrink-0 capitalize shadow-sm"
+          :class="filterQuery === status 
+            ? 'bg-primary text-white border-primary' 
+            : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'"
+        >
+          {{ status }}
+        </button>
+      </div>
+
+      <!-- Reservations List -->
+      <div class="space-y-4 pb-24">
         <div
           v-if="!fetching && filteredReservations().length"
           class="space-y-3"
@@ -41,87 +47,116 @@
             :to="{ name: 'reservationDetails', params: { id: reservation.id } }"
             v-for="reservation in filteredReservations()"
             :key="reservation.id"
-            class="bg-white w-full h-fit rounded-lg shadow-sm p-4 flex justify-between items-center"
+            class="bg-white w-full border border-gray-100 rounded-2xl shadow-sm p-5 flex justify-between items-center hover:scale-[1.01] active:scale-95 transition-all block"
           >
-            <div class="space-y-1">
-              <h1 class="font-semibold text-gray-700 space-x-2 text-sm">
-                <span class="uppercase"
-                  >GB{{ reservation.id.slice(0, 4) }}</span
-                >
-                <span class="text-primary">{{
-                  getService(reservation.serviceID)?.title
-                }}</span>
-              </h1>
-              <p
-                class="text-xs capitalize text-white font-semibold bg-orange-500 w-fit px-3 py-1 rounded"
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-x-2">
+                <span class="text-[9px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded border border-gray-150 uppercase tracking-wide">
+                  GB{{ reservation.id.slice(0, 4) }}
+                </span>
+                <span class="text-xs font-semibold text-gray-400">
+                  {{ moment(reservation.date).format('ll') }}
+                </span>
+              </div>
+              
+              <h3 class="font-bold text-gray-800 text-sm capitalize leading-tight">
+                {{ getService(reservation.serviceID)?.title || 'Loading service...' }}
+              </h3>
+              
+              <span
+                class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold border inline-flex items-center gap-x-1 capitalize"
                 :class="{
-                  '!bg-red-500':
-                    reservation.status === 'canceled' ||
-                    reservation.status === 'rejected',
-                  '!bg-gray-500':
-                    reservation.status === 'completed' ||
-                    reservation.status === 'accepted',
+                  'bg-green-50 text-green-700 border-green-200': reservation.status === 'completed',
+                  'bg-yellow-50 text-yellow-700 border-yellow-200': reservation.status === 'pending',
+                  'bg-blue-50 text-blue-700 border-blue-200': reservation.status === 'accepted',
+                  'bg-red-50 text-red-700 border-red-200': reservation.status === 'canceled',
+                  'bg-rose-50 text-rose-700 border-rose-200': reservation.status === 'rejected'
                 }"
               >
-                {{ reservation.status }}
-              </p>
+                <Icon 
+                  :icon="reservation.status === 'completed' ? 'mdi:check-circle-outline' : 
+                         reservation.status === 'pending' ? 'mdi:clock-outline' : 
+                         reservation.status === 'canceled' ? 'mdi:close-circle-outline' : 'mdi:alert-circle-outline'"
+                  class="text-xs"
+                />
+                <span>{{ reservation.status }}</span>
+              </span>
             </div>
-            <div class="flex items-center gap-x-3">
-              <router-link :to="{ name: 'home' }">
-                <Icon icon="weui:arrow-filled" class="text-2xl" />
-              </router-link>
+            
+            <div class="flex items-center gap-x-3 shrink-0">
+              <div class="text-right">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Amount</p>
+                <p class="text-sm font-bold text-gray-800">{{ formatTotal(reservation.total) }}</p>
+              </div>
+              <Icon icon="mdi:chevron-right" class="text-xl text-gray-400" />
             </div>
           </router-link>
         </div>
-        <div v-if="!fetching && !filteredReservations().length">
-          <p class="text-center mt-5 text-gray-500">No reservations to show.</p>
+
+        <!-- No Bookings -->
+        <div v-if="!fetching && !filteredReservations().length" class="flex flex-col items-center justify-center py-16 space-y-3">
+          <Icon icon="mdi:calendar-blank-outline" class="text-5xl text-gray-300" />
+          <p class="text-sm text-gray-500 font-medium">No bookings found for this status.</p>
         </div>
+
+        <!-- Skeleton Loader -->
         <div v-if="fetching" class="space-y-3">
           <div
             v-for="i in 5"
             :key="i"
-            class="bg-gray-200 animate-pulse rounded w-full h-20"
-          ></div>
+            class="bg-white border border-gray-100 rounded-2xl p-5 flex justify-between items-center animate-pulse"
+          >
+            <div class="space-y-2.5 w-2/3">
+              <div class="flex gap-x-2">
+                <div class="h-4 bg-gray-100 rounded w-1/4"></div>
+                <div class="h-4 bg-gray-100 rounded w-1/3"></div>
+              </div>
+              <div class="h-5 bg-gray-100 rounded w-5/6"></div>
+              <div class="h-5 bg-gray-100 rounded w-1/4 rounded-full"></div>
+            </div>
+            <div class="h-8 bg-gray-100 rounded w-1/5"></div>
+          </div>
         </div>
       </div>
     </div>
-    <!-- bottom navigation -->
-    <div
-      class="fixed bottom-0 left-0 w-full h-16 border flex items-center justify-center gap-x-12 text-3xl green z-10 bg-gray-100"
-    >
-      <router-link :to="{ name: 'home' }" class="relative">
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 w-full h-20 border-t border-gray-100 flex items-center justify-around text-2xl z-20 bg-white/95 backdrop-blur-md pb-4 pt-2">
+      <router-link 
+        :to="{ name: 'home' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'home' }"
+      >
         <Icon icon="iconamoon:home" />
-        <div
-          v-if="$route.name === 'home'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+        <div v-if="$route.name === 'home'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link :to="{ name: 'reservationLists' }" class="relative">
+      <router-link 
+        :to="{ name: 'reservationLists' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'reservationLists' || $route.name === 'reservationDetails' }"
+      >
         <Icon icon="lucide:list" />
-        <div
-          v-if="$route.name === 'reservationLists'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Bookings</span>
+        <div v-if="$route.name === 'reservationLists' || $route.name === 'reservationDetails'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link
-        :to="{ name: 'serviceLists', params: { id: 1 } }"
-        class="relative"
+      <router-link 
+        :to="{ name: 'serviceLists' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'serviceLists' || $route.name === 'serviceDetails' }"
       >
         <Icon icon="hugeicons:cleaning-bucket" />
-        <div
-          v-if="$route.name === 'serviceLists'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Services</span>
+        <div v-if="$route.name === 'serviceLists' || $route.name === 'serviceDetails'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
-      <router-link
-        :to="{ name: 'profile', params: { id: 1 } }"
-        class="relative"
+      <router-link 
+        :to="{ name: 'profile' }" 
+        class="relative flex flex-col items-center gap-y-0.5 text-gray-400 transition-colors"
+        :class="{ 'text-primary': $route.name === 'profile' }"
       >
         <Icon icon="iconoir:user" />
-        <div
-          v-if="$route.name === 'profile'"
-          class="bg-primary w-1 aspect-square rounded-full absolute -bottom-2 left-1/2 -translate-x-1/2"
-        ></div>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+        <div v-if="$route.name === 'profile'" class="bg-primary w-1.5 h-1.5 rounded-full absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
       </router-link>
     </div>
   </div>
@@ -132,7 +167,10 @@ import { computed, onMounted, ref, watchEffect } from "vue";
 import { useDataStore, useAuthStore } from "../store";
 import { db } from "../config/firebaseConfig";
 import { collection, where, query, getDocs } from "firebase/firestore";
+import { useRouter } from "vue-router";
+import moment from "moment";
 
+const router = useRouter();
 const authStore = useAuthStore();
 const dataStore = useDataStore();
 
@@ -145,6 +183,11 @@ onMounted(() => {
     }
   });
 });
+
+const logout = () => {
+  authStore.logout();
+  router.push("/login");
+};
 
 // get reservations
 const reservations = ref([]);
@@ -160,6 +203,7 @@ const getReservations = async () => {
 
     const snapshots = await getDocs(q);
 
+    reservations.value = []; // Reset to avoid duplicates
     snapshots.docs.forEach((doc) => {
       reservations.value.push({
         id: doc.id,
@@ -191,11 +235,21 @@ const filter = (filter) => {
 const getService = (serviceID) => {
   return dataStore.getSingleService(serviceID);
 };
+
+// format currency
+const formatTotal = (totalPrice) => {
+  return Number(totalPrice).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  })
+}
 </script>
 
 <style scoped>
 .router-link-active {
-  color: #0cb632;
+  color: #0cb632 !important;
 }
 
 .overflow-y-auto::-webkit-scrollbar {
@@ -205,7 +259,13 @@ const getService = (serviceID) => {
 #services::-webkit-scrollbar {
   display: none;
 }
-.filter::-webkit-scrollbar {
+
+.scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 </style>

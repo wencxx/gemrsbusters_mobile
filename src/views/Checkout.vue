@@ -35,11 +35,11 @@
                     <h1 class="uppercase text-gray-500">Personal Information</h1>
                     <div class="space-y-5">
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Name</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Name <span class="text-red-500 font-bold">*</span></label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter full name" v-model="firstPageData.name">
                         </div>
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Contact Number</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Contact Number <span class="text-red-500 font-bold">*</span></label>
                             <input type="number" class="border-b py-1 focus:outline-none" placeholder="Enter contact number" v-model="firstPageData.contactNumber">
                         </div>
                     </div>
@@ -50,11 +50,11 @@
                     </div>
                     <div class="space-y-5">
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">City</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">City <span class="text-red-500 font-bold">*</span></label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter full name" readonly v-model="firstPageData.city">
                         </div>
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Barangay</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Barangay <span class="text-red-500 font-bold">*</span></label>
                             <select class="border-b bg-transparent py-1 focus:outline-none" v-model="firstPageData.barangay">
                                 <option value="">Select Barangay</option>
                                 <option>Alangilan</option>
@@ -121,15 +121,15 @@
                             </select>
                         </div>
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Street</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Street <span class="text-red-500 font-bold">*</span></label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter street" v-model="firstPageData.street">
                         </div>
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Block/Lot</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Block/Lot <span class="text-xs text-gray-400 font-normal lowercase">(optional)</span></label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter block" v-model="firstPageData.block">
                         </div>
                         <div class="flex flex-col gap-y-2">
-                            <label class="font-semibold text-gray-500 uppercase text-sm">Landmark</label>
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Landmark <span class="text-xs text-gray-400 font-normal lowercase">(optional)</span></label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter landmark" v-model="firstPageData.landmark">
                         </div>
                     </div>
@@ -202,12 +202,19 @@
                             <label class="font-semibold text-gray-500 uppercase text-sm">Reference Number</label>
                             <input type="text" class="border-b py-1 focus:outline-none" placeholder="Enter reference number" v-model="thirdPageData.referenceNumber">
                         </div>
+                        <div class="flex flex-col gap-y-2 mt-4">
+                            <label class="font-semibold text-gray-500 uppercase text-sm">Upload Receipt / Evidence</label>
+                            <input type="file" accept="image/*" @change="uploadPaymentReceipt" class="border-b py-1 text-sm text-gray-400 file:border-0 file:bg-transparent file:text-gray-600 file:text-sm file:font-medium">
+                            <p v-if="uploadingReceipt" class="text-xs text-orange-500 animate-pulse">Uploading receipt evidence...</p>
+                            <p v-else-if="thirdPageData.paymentReceipt" class="text-xs text-green-500">✓ Evidence uploaded successfully!</p>
+                        </div>
                     </div>
                 </div>
                 <div>
                     <button v-if="currentPage < 3" type="button" class="w-full bg-primary py-2 rounded text-white" @click="next">Continue</button>
-                    <button v-if="currentPage === 3 && !loading" class="w-full bg-primary py-2 rounded text-white">Reserve</button>
-                    <button v-if="currentPage === 3 && loading" class="w-full bg-primary py-2 rounded text-white animate-pulse" disabled>Reserving</button>
+                    <button v-else-if="currentPage === 3 && uploadingReceipt" class="w-full bg-gray-400 py-2 rounded text-white" disabled>Uploading evidence...</button>
+                    <button v-else-if="currentPage === 3 && !loading" class="w-full bg-primary py-2 rounded text-white">Reserve</button>
+                    <button v-else-if="currentPage === 3 && loading" class="w-full bg-primary py-2 rounded text-white animate-pulse" disabled>Reserving</button>
                 </div>
             </form>
         </div>
@@ -251,6 +258,7 @@ const secondPageData = ref({
 const thirdPageData = ref({
     paymentMethod: '',
     referenceNumber: '',
+    paymentReceipt: '',
 })
 
 const useCurrentAddress = () => {
@@ -272,9 +280,21 @@ const currentPage = ref(Number(route.query.page) || 1)
 const hasEmptyFields = ref(false)
 
 const next = () => {
-    if(currentPage.value === 1 && Object.values(firstPageData.value).some(value => !value)) return hasEmptyFields.value = true
+    if(currentPage.value === 1) {
+        const { name, contactNumber, city, barangay, street } = firstPageData.value;
+        if (!name || !contactNumber || !city || !barangay || !street) {
+            return hasEmptyFields.value = true;
+        }
+    }
     if(currentPage.value === 2 && Object.values(secondPageData.value).some(value => !value)) return hasEmptyFields.value = true
-    if(currentPage.value === 3 && Object.values(thirdPageData.value).some(value => !value)) return hasEmptyFields.value = true
+    if(currentPage.value === 3) {
+        if (!thirdPageData.value.paymentMethod) return hasEmptyFields.value = true
+        if (thirdPageData.value.paymentMethod === 'gcash') {
+            if (!thirdPageData.value.referenceNumber || !thirdPageData.value.paymentReceipt) {
+                return hasEmptyFields.value = true
+            }
+        }
+    }
 
     hasEmptyFields.value = false
     currentPage.value++ 
@@ -327,6 +347,35 @@ onMounted(() => {
 const reservationReferene = collection(db, 'reservations')
 const err = ref('')
 const loading = ref(false)
+const uploadingReceipt = ref(false)
+
+const uploadPaymentReceipt = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    uploadingReceipt.value = true
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("upload_preset", "beforeService")
+
+    try {
+        const res = await fetch("https://api.cloudinary.com/v1_1/dqgfea32w/image/upload", {
+            method: "POST",
+            body: formData
+        })
+        const data = await res.json()
+        if (data.secure_url) {
+            thirdPageData.value.paymentReceipt = data.secure_url
+        } else {
+            alert("Upload failed. Please try again.")
+        }
+    } catch (error) {
+        console.error("Error uploading payment receipt", error)
+        alert("Upload failed. Please try again.")
+    } finally {
+        uploadingReceipt.value = false
+    }
+}
 
 const reserve = async () => {
     err.value = ''
@@ -336,6 +385,7 @@ const reserve = async () => {
         ...thirdPageData.value,
         total: (serviceDetails.value.rate * secondPageData.value.floorArea) * secondPageData.value.noOfWorkers,
         status: 'pending',
+        paymentStatus: thirdPageData.value.paymentMethod === 'gcash' ? 'pending' : 'cod',
         serviceID: serviceDetails.value.id,
         userID: currentUser.value.uid
     }
